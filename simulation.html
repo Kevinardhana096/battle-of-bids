@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle of Bids - Simulasi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Battle of Bids</h1>
+            <div class="simulation-badge">🔬 MODE SIMULASI</div>
+            <div id="game-status">Mode Demo - 5 Tim, 1 Soal</div>
+        </header>
+
+        <!-- Scoreboard Section -->
+        <section id="scoreboard" class="scoreboard simulation-scoreboard">
+            <!-- Team cards will be injected here by JS -->
+        </section>
+
+        <!-- Game Views -->
+        <main id="game-area">
+
+            <!-- View 1: Setup (Auto-filled for simulation) -->
+            <div id="view-setup" class="view active">
+                <button class="back-btn" onclick="backToMenu()">← Menu</button>
+                <h2>Persiapan Simulasi</h2>
+                <div class="setup-form">
+                    <p style="color: var(--text-muted); margin-bottom: 20px; text-align: center;">
+                        Tim akan diisi otomatis untuk mode simulasi
+                    </p>
+                    <div class="input-group">
+                        <label>Nama Tim 1</label>
+                        <input type="text" id="team1-name" value="Tim Simulasi A">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 2</label>
+                        <input type="text" id="team2-name" value="Tim Simulasi B">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 3</label>
+                        <input type="text" id="team3-name" value="Tim Simulasi C">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 4</label>
+                        <input type="text" id="team4-name" value="Tim Simulasi D">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 5</label>
+                        <input type="text" id="team5-name" value="Tim Simulasi E">
+                    </div>
+
+                    <button onclick="startGame()">Mulai Simulasi</button>
+                </div>
+
+                <div class="import-panel">
+                    <h3>Import Gambar Soal</h3>
+                    <p class="import-hint">Nama file akan disimpan sesuai format (contoh: Kombinatorika_5.jpg atau
+                        sim_Kombinatorika_10.png). Untuk banyak file, gunakan Ctrl/Shift atau pilih folder.</p>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Asli</label>
+                        <input type="file" id="image-import-asli" accept="image/*" multiple>
+                        <div class="import-status">Tersimpan: <span id="imported-count-asli">0</span> gambar</div>
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Import Satu Gambar (Asli)</label>
+                        <select id="single-target-asli"></select>
+                        <input type="file" id="single-image-asli" accept="image/*">
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Asli (Folder)</label>
+                        <input type="file" id="image-import-asli-folder" accept="image/*" webkitdirectory directory
+                            multiple>
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Simulasi</label>
+                        <input type="file" id="image-import-sim" accept="image/*" multiple>
+                        <div class="import-status">Tersimpan: <span id="imported-count-sim">0</span> gambar</div>
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Import Satu Gambar (Simulasi)</label>
+                        <select id="single-target-sim"></select>
+                        <input type="file" id="single-image-sim" accept="image/*">
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Simulasi (Folder)</label>
+                        <input type="file" id="image-import-sim-folder" accept="image/*" webkitdirectory directory
+                            multiple>
+                    </div>
+
+                    <div class="import-actions">
+                        <button type="button" id="clear-imported-images" class="warning-btn">Hapus Semua Gambar
+                            Import</button>
+                    </div>
+                    <div id="import-message" class="import-message"></div>
+                </div>
+            </div>
+
+            <!-- View 2: Question Board -->
+            <div id="view-board" class="view hidden">
+                <button class="back-btn" onclick="backToSetup()">← Setup</button>
+                <h2>Pilih Soal</h2>
+                <div id="question-grid" class="question-grid" style="grid-template-columns: 1fr; max-width: 200px;">
+                    <!-- Grid items injected by JS -->
+                </div>
+                <button onclick="finishGame()" class="danger-btn" style="margin-top: 20px;">Selesai Permainan (Hitung
+                    Penalti)</button>
+            </div>
+
+            <!-- View 3: Bidding Phase -->
+            <div id="view-bidding" class="view hidden">
+                <div class="phase-header">
+                    <h2 id="bid-category">Kategori</h2>
+                    <div class="question-stats">
+                        <span>Poin Dasar: <b id="bid-points">0</b></span>
+                        <span>Harga Awal: <b id="bid-price">0</b></span>
+                    </div>
+                </div>
+
+                <div class="timer-display">
+                    <span id="bid-timer">30</span> detik
+                </div>
+
+                <div class="current-bid-info">
+                    <p>Bid Tertinggi: <span id="highest-bid-amount">0</span> Gold</p>
+                    <p>Oleh: <span id="highest-bidder-name">-</span></p>
+                </div>
+
+                <!-- Start Bidding Button (shown before bidding starts) -->
+                <button id="start-bidding-btn" onclick="startBidding()" class="success-btn"
+                    style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;">
+                    ▶️ Mulai Bidding
+                </button>
+
+                <!-- Bidding Controls (hidden until bidding starts) -->
+                <div id="bidding-controls" class="control-panel" style="display: none;">
+                    <h3>Panel Kontrol GM</h3>
+                    <div class="bid-inputs">
+                        <input type="number" id="bid-input" placeholder="Masukkan Jumlah Bid" step="5">
+                        <div id="team-bid-buttons" class="team-buttons">
+                            <!-- Buttons for each team to place the bid in input -->
+                        </div>
+                    </div>
+                    <div class="action-buttons" id="bidding-action-buttons">
+                        <button onclick="endBiddingNoWinner()" class="warning-btn">
+                            Tidak Ada Penawar (-5 Poin Semua)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 4: Answering Phase -->
+            <div id="view-answering" class="view hidden">
+                <h2>Fase Menjawab</h2>
+                <div class="answering-info">
+                    <p>Tim Menjawab: <b id="answering-team">-</b></p>
+                    <div class="question-image-container">
+                        <img id="question-image" src="question_placeholder.svg" alt="Soal">
+                    </div>
+                    <p>Durasi: 3 Menit</p>
+                </div>
+
+                <div class="timer-display">
+                    <span id="answer-timer">180</span> detik
+                </div>
+
+                <!-- Start Answering Button (shown before timer starts) -->
+                <button id="start-answering-btn" onclick="startAnswering()" class="success-btn"
+                    style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;">
+                    ▶️ Mulai Menjawab
+                </button>
+
+                <!-- Answering Controls (hidden until timer starts) -->
+                <div id="answering-controls" class="control-panel" style="display: none;">
+                    <button onclick="handleAnswer(true)" class="success-btn">Jawaban Benar</button>
+                    <button onclick="handleAnswer(false)" class="danger-btn">Jawaban Salah / Tidak Menjawab</button>
+                </div>
+            </div>
+
+            <!-- View 5: Re-Bidding (Pelemparan) Phase -->
+            <div id="view-rebidding" class="view hidden">
+                <h2>Pelemparan Soal (Re-Bidding)</h2>
+                <p>Siapa Cepat Dia Dapat!</p>
+                <p>Harga: <b id="rebid-price">0</b> Gold (Sama dengan pemenang sebelumnya)</p>
+
+                <div class="timer-display">
+                    <span id="rebid-timer">10</span> detik
+                </div>
+
+                <!-- Start Rebidding Button (shown before timer starts) -->
+                <button id="start-rebidding-btn" onclick="startRebidding()" class="success-btn"
+                    style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;">
+                    ▶️ Mulai Pelemparan
+                </button>
+
+                <!-- Rebidding Controls (hidden until timer starts) -->
+                <div id="rebidding-controls" class="control-panel" style="display: none;">
+                    <h3>Pilih Tim Tercepat:</h3>
+                    <div id="rebid-team-buttons" class="team-buttons">
+                        <!-- Buttons for teams to take the throw -->
+                    </div>
+                    <button onclick="cancelRebid()" class="warning-btn">Tidak Ada yang Mengambil</button>
+                </div>
+            </div>
+
+            <!-- View 6: Re-Answering Phase -->
+            <div id="view-reanswering" class="view hidden">
+                <h2>Menjawab Lemparan</h2>
+                <p>Tim: <b id="reanswering-team">-</b></p>
+                <p>Benar: +80% Poin | Salah: -100% Poin</p>
+
+                <div class="control-panel">
+                    <button onclick="handleReAnswer(true)" class="success-btn">Jawaban Benar</button>
+                    <button onclick="handleReAnswer(false)" class="danger-btn">Jawaban Salah</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Answer Result Modal (Benar/Salah) -->
+        <div id="answer-result-modal" class="answer-result-modal hidden">
+            <div class="result-content">
+                <div id="result-icon" class="result-icon">✓</div>
+                <div id="result-text" class="result-text">BENAR!</div>
+                <div id="result-points" class="result-points">+25 Poin</div>
+            </div>
+        </div>
+
+        <!-- Log / Notification Area -->
+        <div id="game-log" class="game-log">
+            <h3>Log Permainan</h3>
+            <ul id="log-list"></ul>
+        </div>
+    </div>
+
+    <script src="simulation.js"></script>
+</body>
+
+</html>

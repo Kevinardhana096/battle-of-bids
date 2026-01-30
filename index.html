@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle of Bids System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Battle of Bids</h1>
+            <div id="game-status">Menunggu Permainan Dimulai...</div>
+        </header>
+
+        <!-- Scoreboard Section -->
+        <section id="scoreboard" class="scoreboard">
+            <!-- Team cards will be injected here by JS -->
+        </section>
+
+        <!-- Game Views -->
+        <main id="game-area">
+
+            <!-- View 1: Setup -->
+            <div id="view-setup" class="view active">
+                <button class="back-btn" onclick="backToMenu()">← Menu</button>
+                <h2>Pengaturan Tim</h2>
+                <div class="setup-form">
+                    <div class="input-group">
+                        <label>Nama Tim 1</label>
+                        <input type="text" id="team1-name" value="Tim A">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 2</label>
+                        <input type="text" id="team2-name" value="Tim B">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 3</label>
+                        <input type="text" id="team3-name" value="Tim C">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 4</label>
+                        <input type="text" id="team4-name" value="Tim D">
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Tim 5</label>
+                        <input type="text" id="team5-name" value="Tim E">
+                    </div>
+                    <button onclick="startGame()">Mulai Permainan</button>
+                </div>
+
+                <div class="import-panel">
+                    <h3>Import Gambar Soal</h3>
+                    <p class="import-hint">Nama file akan disimpan sesuai format (contoh: Kombinatorika_5.jpg atau
+                        sim_Kombinatorika_10.png). Untuk banyak file, gunakan Ctrl/Shift atau pilih folder.</p>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Asli</label>
+                        <input type="file" id="image-import-asli" accept="image/*" multiple>
+                        <div class="import-status">Tersimpan: <span id="imported-count-asli">0</span> gambar</div>
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Import Satu Gambar (Asli)</label>
+                        <select id="single-target-asli"></select>
+                        <input type="file" id="single-image-asli" accept="image/*">
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Asli (Folder)</label>
+                        <input type="file" id="image-import-asli-folder" accept="image/*" webkitdirectory directory
+                            multiple>
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Simulasi</label>
+                        <input type="file" id="image-import-sim" accept="image/*" multiple>
+                        <div class="import-status">Tersimpan: <span id="imported-count-sim">0</span> gambar</div>
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Import Satu Gambar (Simulasi)</label>
+                        <select id="single-target-sim"></select>
+                        <input type="file" id="single-image-sim" accept="image/*">
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">Gambar Soal Simulasi (Folder)</label>
+                        <input type="file" id="image-import-sim-folder" accept="image/*" webkitdirectory directory
+                            multiple>
+                    </div>
+
+                    <div class="import-actions">
+                        <button type="button" id="clear-imported-images" class="warning-btn">Hapus Semua Gambar
+                            Import</button>
+                    </div>
+                    <div id="import-message" class="import-message"></div>
+                </div>
+            </div>
+
+            <!-- View 2: Pre-Round Briefing Slides -->
+            <div id="view-preround" class="view hidden preround-view">
+                <div class="preround-container">
+                    <div class="preround-header">
+                        <h2>📋 Penjelasan Battle of Bids</h2>
+                        <div class="slide-indicator">
+                            <span id="slide-current">1</span> / <span id="slide-total">8</span>
+                        </div>
+                    </div>
+
+                    <div class="slides-wrapper">
+                        <!-- Slide 1: Welcome -->
+                        <div class="briefing-slide active" data-slide="1">
+                            <div class="welcome-slide">
+                                <div class="welcome-icon">⚔️</div>
+                                <h2 class="welcome-title">WELCOME TO</h2>
+                                <h1 class="welcome-main-title">BATTLE OF BIDS</h1>
+                                <p class="welcome-subtitle">Babak Grand Final • Olimpiade Matematika</p>
+                                <div class="welcome-tagline">
+                                    <span>🧠 Strategi</span>
+                                    <span>⚡ Kecepatan</span>
+                                    <span>🎯 Ketepatan</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2: Gambaran Umum -->
+                        <div class="briefing-slide" data-slide="2">
+                            <h3 class="slide-title">🎯 Gambaran Umum Battle of Bids</h3>
+                            <div class="slide-content">
+                                <div class="info-card" style="--delay: 0">
+                                    <span class="card-icon">👥</span>
+                                    <div class="card-text">
+                                        <strong>Peserta</strong>
+                                        <p>Babak diikuti oleh <b>5 tim finalis</b> hasil babak sebelumnya</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 1">
+                                    <span class="card-icon">🏛️</span>
+                                    <div class="card-text">
+                                        <strong>Pelaksanaan</strong>
+                                        <p>Dilaksanakan secara <b>luring (offline)</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 2">
+                                    <span class="card-icon">🏆</span>
+                                    <div class="card-text">
+                                        <strong>Struktur Babak Grand Final</strong>
+                                        <p>Terdiri dari dua ronde: <b>Battle of Bids</b> dan <b>Presentasi</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 3">
+                                    <span class="card-icon">📊</span>
+                                    <div class="card-text">
+                                        <strong>Peringkat Akhir</strong>
+                                        <p>Juara 1, Juara 2, Juara 3, Juara Harapan 1, Juara Harapan 2</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 4">
+                                    <span class="card-icon">🧠</span>
+                                    <div class="card-text">
+                                        <strong>Yang Diuji</strong>
+                                        <p><b>Strategi, Kecepatan, Ketepatan</b> berpikir</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 5">
+                                    <span class="card-icon">💰</span>
+                                    <div class="card-text">
+                                        <strong>Sistem Bidding</strong>
+                                        <p>Tim menggunakan <b>gold</b> untuk memperoleh hak menjawab soal</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 6">
+                                    <span class="card-icon">📚</span>
+                                    <div class="card-text">
+                                        <strong>5 Kategori Soal</strong>
+                                        <p>Kombinatorika, Aljabar Linear, Struktur Aljabar, Analisis Riil, Analisis
+                                            Kompleks</p>
+                                    </div>
+                                </div>
+                                <div class="info-card highlight-card" style="--delay: 7">
+                                    <span class="card-icon">⏱️</span>
+                                    <div class="card-text">
+                                        <strong>Durasi Ronde</strong>
+                                        <p><b>90 menit</b> total</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: Peserta, Gold & Soal -->
+                        <div class="briefing-slide" data-slide="3">
+                            <h3 class="slide-title">💎 Peserta, Gold & Soal</h3>
+                            <div class="slide-content centered-cards">
+                                <div class="info-card large-card" style="--delay: 0">
+                                    <span class="card-icon">👥</span>
+                                    <div class="card-text">
+                                        <strong>Jumlah Peserta</strong>
+                                        <p class="big-number">5 Tim</p>
+                                    </div>
+                                </div>
+                                <div class="info-card large-card gold-card" style="--delay: 1">
+                                    <span class="card-icon">💰</span>
+                                    <div class="card-text">
+                                        <strong>Saldo Awal Setiap Tim</strong>
+                                        <p class="big-number gold-text">700 Gold</p>
+                                        <p class="note">Gold hanya untuk bidding, tidak untuk poin utama</p>
+                                    </div>
+                                </div>
+                                <div class="info-card large-card" style="--delay: 2">
+                                    <span class="card-icon">📝</span>
+                                    <div class="card-text">
+                                        <strong>Total Soal</strong>
+                                        <p class="big-number">20 Soal</p>
+                                        <p class="note">Isian singkat</p>
+                                    </div>
+                                </div>
+                                <div class="info-card large-card" style="--delay: 3">
+                                    <span class="card-icon">📂</span>
+                                    <div class="card-text">
+                                        <strong>Pembagian Soal</strong>
+                                        <p class="big-number">5 Kategori × 4 Soal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 4: Poin Dasar & Aturan Bidding -->
+                        <div class="briefing-slide" data-slide="4">
+                            <h3 class="slide-title">⭐ Poin Dasar & Aturan Bidding</h3>
+                            <div class="slide-content">
+                                <div class="points-grid" style="--delay: 0">
+                                    <div class="point-card">
+                                        <span class="point-value">5</span>
+                                        <span class="point-label">Poin</span>
+                                    </div>
+                                    <div class="point-card">
+                                        <span class="point-value">10</span>
+                                        <span class="point-label">Poin</span>
+                                    </div>
+                                    <div class="point-card">
+                                        <span class="point-value">15</span>
+                                        <span class="point-label">Poin</span>
+                                    </div>
+                                    <div class="point-card">
+                                        <span class="point-value">25</span>
+                                        <span class="point-label">Poin</span>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 1">
+                                    <span class="card-icon">💵</span>
+                                    <div class="card-text">
+                                        <strong>Harga Awal Bidding</strong>
+                                        <p>Sesuai dengan <b>poin dasar soal</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 2">
+                                    <span class="card-icon">📋</span>
+                                    <div class="card-text">
+                                        <strong>Sebelum Bidding Ditampilkan</strong>
+                                        <p>Kategori, Poin Dasar, Harga Awal</p>
+                                    </div>
+                                </div>
+                                <div class="info-card highlight-card" style="--delay: 3">
+                                    <span class="card-icon">⏱️</span>
+                                    <div class="card-text">
+                                        <strong>Durasi Bidding</strong>
+                                        <p class="big-number">30 Detik</p>
+                                        <p class="note">per soal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 5: Mekanisme Bid & Bel -->
+                        <div class="briefing-slide" data-slide="5">
+                            <h3 class="slide-title">🔔 Mekanisme Bid & Bel</h3>
+                            <div class="slide-content">
+                                <div class="info-card" style="--delay: 0">
+                                    <span class="card-icon">📈</span>
+                                    <div class="card-text">
+                                        <strong>Kenaikan Bid</strong>
+                                        <p>Minimal <b>5 gold</b>, Maksimal <b>5× harga awal</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 1">
+                                    <span class="card-icon">🔢</span>
+                                    <div class="card-text">
+                                        <strong>Format Bid</strong>
+                                        <p>Bilangan <b>bulat</b> & <b>kelipatan 5</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card warning-card" style="--delay: 2">
+                                    <span class="card-icon">⚠️</span>
+                                    <div class="card-text">
+                                        <strong>Batas Gold</strong>
+                                        <p>Tim <b>tidak boleh</b> menawar melebihi sisa gold</p>
+                                        <p class="note">Jika melebihi saldo → bid tidak sah</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 3">
+                                    <span class="card-icon">🔔</span>
+                                    <div class="card-text">
+                                        <strong>Sistem Bel</strong>
+                                        <p>Setiap meja tim dilengkapi <b>bel</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card highlight-card" style="--delay: 4">
+                                    <span class="card-icon">⏰</span>
+                                    <div class="card-text">
+                                        <strong>Setelah Menekan Bel</strong>
+                                        <p>Wajib menyebutkan bid dalam <b>5 detik</b></p>
+                                        <p class="note">Jika tidak → hak bidding hangus</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 6: Aturan Lanjutan & Disiplin -->
+                        <div class="briefing-slide" data-slide="6">
+                            <h3 class="slide-title">📜 Aturan Lanjutan & Disiplin</h3>
+                            <div class="slide-content">
+                                <div class="info-card" style="--delay: 0">
+                                    <span class="card-icon">🔄</span>
+                                    <div class="card-text">
+                                        <strong>Bid Ulang</strong>
+                                        <p>Tim lain boleh melakukan bid ulang selama <b>waktu masih ada</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 1">
+                                    <span class="card-icon">📈</span>
+                                    <div class="card-text">
+                                        <strong>Menaikkan Bid Sendiri</strong>
+                                        <p>Tim boleh <b>menaikkan bid</b> meskipun sudah menawar sebelumnya</p>
+                                    </div>
+                                </div>
+                                <div class="info-card danger-card" style="--delay: 2">
+                                    <span class="card-icon">🚫</span>
+                                    <div class="card-text">
+                                        <strong>Pelanggaran Bel</strong>
+                                        <p>Menekan bel berulang untuk mengganggu:</p>
+                                        <p class="note">Peringatan → Skorsing → Diskualifikasi</p>
+                                    </div>
+                                </div>
+                                <div class="info-card warning-card" style="--delay: 3">
+                                    <span class="card-icon">⚠️</span>
+                                    <div class="card-text">
+                                        <strong>Wajib Bid Minimal</strong>
+                                        <p>Setiap tim wajib melakukan <b>minimal 1 bid</b> di setiap kategori</p>
+                                        <p class="note">Jika tidak: <b>-50 poin</b> per kategori</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 7: Penentuan Pemenang & Penilaian -->
+                        <div class="briefing-slide" data-slide="7">
+                            <h3 class="slide-title">🏅 Penentuan Pemenang & Penilaian</h3>
+                            <div class="slide-content">
+                                <div class="info-card" style="--delay: 0">
+                                    <span class="card-icon">⏱️</span>
+                                    <div class="card-text">
+                                        <strong>Setelah 30 Detik</strong>
+                                        <p>Tim dengan <b>bid tertinggi</b> memenangkan bidding</p>
+                                    </div>
+                                </div>
+                                <div class="info-card warning-card" style="--delay: 1">
+                                    <span class="card-icon">💸</span>
+                                    <div class="card-text">
+                                        <strong>Gold Pemenang</strong>
+                                        <p><b>Dipotong & tidak dikembalikan</b></p>
+                                        <p class="note">Gold tidak dapat dikonversi menjadi poin utama</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 2">
+                                    <span class="card-icon">📄</span>
+                                    <div class="card-text">
+                                        <strong>Tampilan Soal</strong>
+                                        <p>Soal ditampilkan <b>setelah bidding selesai</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card highlight-card" style="--delay: 3">
+                                    <span class="card-icon">⏰</span>
+                                    <div class="card-text">
+                                        <strong>Waktu Menjawab</strong>
+                                        <p class="big-number">3 Menit</p>
+                                    </div>
+                                </div>
+                                <div class="info-card two-col" style="--delay: 4">
+                                    <div class="col success-col">
+                                        <span class="card-icon">✅</span>
+                                        <strong>Jawaban Benar</strong>
+                                        <p>+ Poin Dasar</p>
+                                    </div>
+                                    <div class="col danger-col">
+                                        <span class="card-icon">❌</span>
+                                        <strong>Salah / Kosong</strong>
+                                        <p>− Poin Dasar</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 8: Pelemparan & Kondisi Khusus -->
+                        <div class="briefing-slide" data-slide="8">
+                            <h3 class="slide-title">🔄 Pelemparan & Kondisi Khusus</h3>
+                            <div class="slide-content">
+                                <div class="info-card" style="--delay: 0">
+                                    <span class="card-icon">🎯</span>
+                                    <div class="card-text">
+                                        <strong>Pelemparan Soal</strong>
+                                        <p>Jika pemenang awal <b>salah</b>, soal dapat dilempar <b>1 kali</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 1">
+                                    <span class="card-icon">⏱️</span>
+                                    <div class="card-text">
+                                        <strong>Durasi Pelemparan</strong>
+                                        <p class="big-number">10 Detik</p>
+                                    </div>
+                                </div>
+                                <div class="info-card" style="--delay: 2">
+                                    <span class="card-icon">💰</span>
+                                    <div class="card-text">
+                                        <strong>Bid Pelemparan</strong>
+                                        <p>Sama dengan <b>bid pemenang awal</b></p>
+                                    </div>
+                                </div>
+                                <div class="info-card two-col" style="--delay: 3">
+                                    <div class="col success-col">
+                                        <span class="card-icon">✅</span>
+                                        <strong>Benar</strong>
+                                        <p><b>+80%</b> poin dasar</p>
+                                    </div>
+                                    <div class="col danger-col">
+                                        <span class="card-icon">❌</span>
+                                        <strong>Salah</strong>
+                                        <p><b>−100%</b> poin dasar</p>
+                                    </div>
+                                </div>
+                                <div class="info-card danger-card" style="--delay: 4">
+                                    <span class="card-icon">🚫</span>
+                                    <div class="card-text">
+                                        <strong>Tidak Ada Bid</strong>
+                                        <p>Semua tim <b>−5 poin</b>, soal hangus</p>
+                                    </div>
+                                </div>
+                                <div class="info-card warning-card" style="--delay: 5">
+                                    <span class="card-icon">⚠️</span>
+                                    <div class="card-text">
+                                        <strong>Kondisi Skorsing</strong>
+                                        <p>Tim menang <b>3 bidding berturut-turut</b> tapi salah semua:</p>
+                                        <p class="note">Diskors 1 soal berikutnya</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slide-controls">
+                        <button id="prev-slide-btn" class="slide-nav-btn" onclick="prevSlide()" disabled>
+                            ← Sebelumnya
+                        </button>
+                        <div class="slide-dots" id="slide-dots">
+                            <!-- Dots injected by JS -->
+                        </div>
+                        <button id="next-slide-btn" class="slide-nav-btn" onclick="nextSlide()">
+                            Selanjutnya →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 3: Question Board -->
+            <div id="view-board" class="view hidden">
+                <button class="back-btn" onclick="backToSetup()">← Setup</button>
+                <h2>Pilih Soal</h2>
+                <div id="question-grid" class="question-grid">
+                    <!-- Grid items injected by JS -->
+                </div>
+                <button onclick="finishGame()" class="danger-btn" style="margin-top: 20px;">Selesai Permainan (Hitung
+                    Penalti)</button>
+            </div>
+
+            <!-- View 3: Bidding Phase -->
+            <div id="view-bidding" class="view hidden">
+                <div class="phase-header">
+                    <h2 id="bid-category">Kategori</h2>
+                    <div class="question-stats">
+                        <span>Poin Dasar: <b id="bid-points">0</b></span>
+                        <span>Harga Awal: <b id="bid-price">0</b></span>
+                    </div>
+                </div>
+
+                <div class="timer-display">
+                    <span id="bid-timer">30</span> detik
+                </div>
+
+                <div class="current-bid-info">
+                    <p>Bid Tertinggi: <span id="highest-bid-amount">0</span> Gold</p>
+                    <p>Oleh: <span id="highest-bidder-name">-</span></p>
+                </div>
+
+                <!-- Start Bidding Button (shown before bidding starts) -->
+                <button id="start-bidding-btn" onclick="startBidding()" class="success-btn"
+                    style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;">
+                    ▶️ Mulai Bidding
+                </button>
+
+                <!-- Bidding Controls (hidden until bidding starts) -->
+                <div id="bidding-controls" class="control-panel" style="display: none;">
+                    <h3>Panel Kontrol GM</h3>
+                    <div class="bid-inputs">
+                        <input type="number" id="bid-input" placeholder="Masukkan Jumlah Bid" step="5">
+                        <div id="team-bid-buttons" class="team-buttons">
+                            <!-- Buttons for each team to place the bid in input -->
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button onclick="endBiddingNoWinner()" class="warning-btn">Tidak Ada Penawar (-5 Poin
+                            Semua)</button>
+                    </div>
+                    <div class="timer-controls" style="margin-top: 10px;">
+                        <button id="pause-timer-btn" onclick="pauseTimer()" style="display: none;">⏸️ Jeda
+                            Timer</button>
+                        <button id="resume-timer-btn" onclick="resumeTimer()" style="display: none;">▶️ Lanjut
+                            Timer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 4: Answering Phase -->
+            <div id="view-answering" class="view hidden">
+                <h2>Fase Menjawab</h2>
+                <div class="answering-info">
+                    <p>Tim Menjawab: <b id="answering-team">-</b></p>
+                    <div class="question-image-container">
+                        <img id="question-image" src="question_placeholder.svg" alt="Soal">
+                    </div>
+                    <p>Durasi: 3 Menit</p>
+                </div>
+
+                <div class="timer-display">
+                    <span id="answer-timer">180</span> detik
+                </div>
+
+                <!-- Start Answering Button (shown before timer starts) -->
+                <button id="start-answering-btn" onclick="startAnswering()" class="success-btn"
+                    style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;">
+                    ▶️ Mulai Menjawab
+                </button>
+
+                <!-- Answering Controls (hidden until timer starts) -->
+                <div id="answering-controls" class="control-panel" style="display: none;">
+                    <button onclick="handleAnswer(true)" class="success-btn">Jawaban Benar</button>
+                    <button onclick="handleAnswer(false)" class="danger-btn">Jawaban Salah / Tidak Menjawab</button>
+                </div>
+                <div class="timer-controls" style="margin-top: 10px;">
+                    <button id="pause-timer-answering-btn" onclick="pauseTimer()" style="display: none;">⏸️ Jeda
+                        Timer</button>
+                    <button id="resume-timer-answering-btn" onclick="resumeTimer()" style="display: none;">▶️ Lanjut
+                        Timer</button>
+                </div>
+            </div>
+
+            <!-- View 5: Re-Bidding (Pelemparan) Phase -->
+            <div id="view-rebidding" class="view hidden">
+                <h2>Pelemparan Soal (Re-Bidding)</h2>
+                <p>Siapa Cepat Dia Dapat!</p>
+                <p>Harga: <b id="rebid-price">0</b> Gold (Sama dengan pemenang sebelumnya)</p>
+
+                <div class="timer-display">
+                    <span id="rebid-timer">10</span> detik
+                </div>
+
+                <!-- Start Rebidding Button (shown before timer starts) -->
+                <button id="start-rebidding-btn" onclick="startRebidding()" class="success-btn"
+                    style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;">
+                    ▶️ Mulai Pelemparan
+                </button>
+
+                <!-- Rebidding Controls (hidden until timer starts) -->
+                <div id="rebidding-controls" class="control-panel" style="display: none;">
+                    <h3>Pilih Tim Tercepat:</h3>
+                    <div id="rebid-team-buttons" class="team-buttons">
+                        <!-- Buttons for teams to take the throw -->
+                    </div>
+                    <button onclick="cancelRebid()" class="warning-btn">Tidak Ada yang Mengambil</button>
+                </div>
+            </div>
+
+            <!-- View 6: Re-Answering Phase -->
+            <div id="view-reanswering" class="view hidden">
+                <h2>Menjawab Lemparan</h2>
+                <p>Tim: <b id="reanswering-team">-</b></p>
+                <p>Benar: +80% Poin | Salah: -100% Poin</p>
+
+                <div class="control-panel">
+                    <button onclick="handleReAnswer(true)" class="success-btn">Jawaban Benar</button>
+                    <button onclick="handleReAnswer(false)" class="danger-btn">Jawaban Salah</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Answer Result Modal (Benar/Salah) -->
+        <div id="answer-result-modal" class="answer-result-modal hidden">
+            <div class="result-content">
+                <div id="result-icon" class="result-icon">✓</div>
+                <div id="result-text" class="result-text">BENAR!</div>
+                <div id="result-points" class="result-points">+25 Poin</div>
+            </div>
+        </div>
+
+        <!-- Shortcut Legend -->
+        <!-- <div id="shortcut-legend" class="shortcut-legend">
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <div class="shortcut-grid">
+                <div class="shortcut-section">
+                    <span class="shortcut-title">Bidding</span>
+                    <div class="shortcut-item"><kbd>Space</kbd> Mulai Bidding</div>
+                    <div class="shortcut-item"><kbd>1</kbd>-<kbd>5</kbd> Pilih Tim</div>
+                    <div class="shortcut-item"><kbd>Esc</kbd> Tidak Ada Penawar</div>
+                </div>
+                <div class="shortcut-section">
+                    <span class="shortcut-title">Jawaban</span>
+                    <div class="shortcut-item"><kbd>B</kbd> Benar</div>
+                    <div class="shortcut-item"><kbd>S</kbd> Salah</div>
+                </div>
+                <div class="shortcut-section">
+                    <span class="shortcut-title">Quick Bid</span>
+                    <div class="shortcut-item"><kbd>↑</kbd>/<kbd>↓</kbd> Adjust 5</div>
+                    <div class="shortcut-item"><kbd>Shift</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> Adjust 25</div>
+                    <div class="shortcut-item"><kbd>PgUp</kbd>/<kbd>Dn</kbd> Min/Max</div>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- Log / Notification Area -->
+        <div id="game-log" class="game-log">
+            <h3>Log Permainan</h3>
+            <ul id="log-list"></ul>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

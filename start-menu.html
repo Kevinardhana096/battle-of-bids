@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle of Bids - Menu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="start-menu-container">
+        <header class="start-menu-header">
+            <h1 class="start-menu-title">Battle of Bids</h1>
+            <p class="start-menu-subtitle">Pilih Mode Permainan</p>
+        </header>
+
+        <div class="mode-cards">
+            <!-- Host Mode Card -->
+            <div class="mode-card featured" onclick="selectMode('host')" tabindex="0" role="button"
+                aria-label="Host Mode">
+                <div class="mode-card-header">
+                    <div class="mode-icon">🎮</div>
+                    <h2 class="mode-title">HOST MODE</h2>
+                    <p class="mode-description">
+                        Kontrol penuh permainan<br>
+                        Atur tim & kelola game
+                    </p>
+                </div>
+                <div class="mode-card-body">
+                    <ul class="mode-features">
+                        <li>5 Tim</li>
+                        <li>20 Soal</li>
+                        <li>Full Control</li>
+                    </ul>
+                </div>
+                <div class="mode-card-footer">
+                    <button class="mode-btn" onclick="event.stopPropagation(); selectMode('host')">Mulai Host</button>
+                </div>
+            </div>
+
+            <!-- Viewer Mode Card -->
+            <div class="mode-card" onclick="selectMode('viewer')" tabindex="0" role="button" aria-label="Viewer Mode">
+                <div class="mode-card-header">
+                    <div class="mode-icon">👁️</div>
+                    <h2 class="mode-title">VIEWER MODE</h2>
+                    <p class="mode-description">
+                        Tampilan untuk penonton<br>
+                        Display only, no control
+                    </p>
+                </div>
+                <div class="mode-card-body">
+                    <ul class="mode-features">
+                        <li>Live Updates</li>
+                        <li>Scoreboard</li>
+                        <li>Read Only</li>
+                    </ul>
+                </div>
+                <div class="mode-card-footer">
+                    <button class="mode-btn" onclick="event.stopPropagation(); selectMode('viewer')">Buka
+                        Viewer</button>
+                </div>
+            </div>
+
+            <!-- Simulation Mode Card -->
+            <div class="mode-card" onclick="selectMode('simulation')" tabindex="0" role="button"
+                aria-label="Simulation Mode">
+                <div class="mode-card-header">
+                    <div class="mode-icon">🔬</div>
+                    <h2 class="mode-title">SIMULASI</h2>
+                    <p class="mode-description">
+                        Mode demo cepat<br>
+                        Perfect untuk latihan
+                    </p>
+                </div>
+                <div class="mode-card-body">
+                    <ul class="mode-features">
+                        <li>3 Tim</li>
+                        <li>5 Soal</li>
+                        <li>Quick Start</li>
+                    </ul>
+                </div>
+                <div class="mode-card-footer">
+                    <button class="mode-btn" onclick="event.stopPropagation(); selectMode('simulation')">Mulai
+                        Simulasi</button>
+                    <button class="mode-btn secondary"
+                        onclick="event.stopPropagation(); selectMode('simulation-viewer')">
+                        Buka Viewer Simulasi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="start-menu-footer">
+            <p>Battle of Bids System v2.0</p>
+        </footer>
+    </div>
+
+    <script>
+        // Mode selection handler
+        function selectMode(mode) {
+            // Add click animation
+            document.body.style.opacity = '0.8';
+
+            setTimeout(() => {
+                switch (mode) {
+                    case 'host':
+                        window.location.href = 'index.html';
+                        break;
+                    case 'viewer':
+                        window.location.href = 'viewer.html';
+                        break;
+                    case 'simulation':
+                        window.location.href = 'simulation.html';
+                        break;
+                    case 'simulation-viewer':
+                        window.location.href = 'viewer.html?mode=simulation';
+                        break;
+                }
+            }, 150);
+        }
+
+        // Keyboard navigation for cards
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const focused = document.activeElement;
+                if (focused.classList.contains('mode-card')) {
+                    focused.click();
+                }
+            }
+        });
+
+        // Add entrance animation
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '1';
+            }, 50);
+        });
+    </script>
+</body>
+
+</html>

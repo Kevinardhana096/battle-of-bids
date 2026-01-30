@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle of Bids - Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Viewer-specific styles - NO SCROLL, Horizontal Layout Only */
+        html,
+        body {
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            margin-bottom: 15px;
+            padding: 8px;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: clamp(1.8em, 3vw, 2.8em);
+            margin-bottom: 5px;
+        }
+
+        #game-status {
+            font-size: clamp(0.8em, 1.2vw, 1em);
+        }
+
+        .viewer-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--gold);
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: clamp(0.7em, 1vw, 0.85em);
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .scoreboard {
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .team-card {
+            padding: clamp(10px, 1.5vh, 18px) clamp(8px, 1vw, 15px);
+            font-size: clamp(0.75em, 1vw, 0.95em);
+        }
+
+        .team-name {
+            font-size: clamp(0.9em, 1.2vw, 1.2em);
+            margin-bottom: 5px;
+        }
+
+        .stat-gold,
+        .stat-points {
+            font-size: clamp(0.75em, 1vw, 0.95em);
+        }
+
+        #game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .view {
+            min-height: 0;
+            height: 100%;
+            padding: clamp(15px, 2vh, 30px) clamp(15px, 2vw, 40px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .view h2 {
+            font-size: clamp(1.3em, 2.5vw, 2em);
+            margin-bottom: clamp(10px, 2vh, 20px);
+        }
+
+        .timer-display {
+            font-size: clamp(3em, 8vw, 6em);
+            margin: clamp(10px, 2vh, 20px) 0;
+        }
+
+        .timer-display small {
+            font-size: 0.3em;
+        }
+
+        .current-bid-info {
+            padding: clamp(15px, 2vh, 25px) clamp(20px, 3vw, 40px);
+            font-size: clamp(0.9em, 1.2vw, 1.15em);
+            margin: clamp(8px, 1.5vh, 15px) 0;
+        }
+
+        .current-bid-info p {
+            margin: clamp(3px, 0.5vh, 6px) 0;
+        }
+
+        #highest-bid-amount {
+            font-size: clamp(1.2em, 2vw, 1.6em);
+        }
+
+        .question-stats {
+            font-size: clamp(1.5em, 1.2vw, 1.05em);
+            gap: clamp(15px, 2vw, 30px);
+            margin-top: 8px;
+        }
+
+        .question-stats span {
+            padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 20px);
+        }
+
+        .waiting-screen {
+            text-align: center;
+            padding: clamp(30px, 5vh, 60px) clamp(20px, 3vw, 40px);
+        }
+
+        .waiting-screen h2 {
+            font-size: clamp(1.8em, 3vw, 2.5em);
+            color: var(--highlight);
+            margin-bottom: clamp(10px, 2vh, 15px);
+        }
+
+        .waiting-screen p {
+            font-size: clamp(1em, 1.5vw, 1.3em);
+            color: var(--text-muted);
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: clamp(10px, 1.5vw, 12px);
+            height: clamp(10px, 1.5vw, 12px);
+            background: var(--success);
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        .answering-team-display {
+            font-size: clamp(1em, 1.5vw, 1.3em);
+            color: var(--highlight);
+            margin: 5px 0;
+        }
+
+        /* Viewer answering phase - maximize image but keep timer visible */
+        #view-answering {
+            padding: 10px 15px;
+            justify-content: flex-start;
+            gap: 3px;
+            overflow: hidden;
+        }
+
+        #view-answering h2 {
+            font-size: clamp(1em, 1.8vw, 1.4em);
+            margin-bottom: 3px;
+            flex-shrink: 0;
+        }
+
+        #view-answering .answering-team-display,
+        #view-answering p {
+            margin: 3px 0;
+            flex-shrink: 0;
+        }
+
+        #view-answering .timer-display {
+            font-size: clamp(1.8em, 4vw, 3em);
+            margin: 5px 0;
+            flex-shrink: 0;
+        }
+
+        #view-answering .question-image-container {
+            margin: 8px auto;
+            min-height: 40vh;
+            height: auto;
+            max-height: 60vh;
+            max-width: min(96vw, 1600px);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #view-answering .question-image-container img {
+            width: 100%;
+            height: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+
+        .phase-header {
+            margin-bottom: clamp(8px, 1.5vh, 15px);
+        }
+
+        .question-grid {
+            gap: clamp(10px, 1.5vw, 15px);
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .q-btn {
+            padding: clamp(15px, 2.5vh, 25px) clamp(10px, 1.5vw, 15px);
+            font-size: clamp(1em, 1.8vw, 1.4em);
+            aspect-ratio: 1;
+        }
+
+        .q-btn .q-number {
+            font-size: 1.2em;
+        }
+
+        /* Hide control panels in viewer */
+        .control-panel,
+        .shortcut-legend,
+        #game-log,
+        .setup-form button,
+        .danger-btn[onclick="finishGame()"] {
+            display: none !important;
+        }
+
+        /* Connection status - made smaller and less intrusive */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--card-bg);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: clamp(0.7em, 0.9vw, 0.8em);
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            border-color: var(--success);
+        }
+
+        .connection-status.disconnected {
+            border-color: var(--danger);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .connected .status-dot {
+            background: var(--success);
+        }
+
+        .disconnected .status-dot {
+            background: var(--danger);
+        }
+
+        /* Re-bidding & Re-answering responsive text */
+        #view-rebidding p,
+        #view-reanswering p {
+            font-size: clamp(1em, 1.5vw, 1.3em);
+            margin: clamp(5px, 1vh, 8px) 0;
+        }
+
+        #rebid-price {
+            font-size: clamp(1.2em, 1.8vw, 1.5em);
+        }
+
+        /* ===== VIEWER PRE-ROUND SLIDES - SEAMLESS FULLSCREEN WITH ANIMATIONS ===== */
+
+        /* Lightweight animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes titleGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            }
+
+            50% {
+                text-shadow: 0 0 35px rgba(255, 215, 0, 0.6), 0 0 50px rgba(255, 215, 0, 0.3);
+            }
+        }
+
+        @keyframes subtleFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        #view-preround.preround-view.view {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0f2847 100%) !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 100vh !important;
+            width: 100vw !important;
+            max-height: 100vh !important;
+            overflow: hidden !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 1000 !important;
+            border-radius: 0 !important;
+        }
+
+        #view-preround .preround-container {
+            display: contents;
+        }
+
+        #view-preround .preround-header,
+        #view-preround .slide-indicator,
+        #view-preround .slide-progress {
+            display: none !important;
+        }
+
+        #view-preround .slides-wrapper {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #view-preround .briefing-slide {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            justify-content: flex-start;
+            align-items: center;
+            gap: clamp(10px, 1.2vh, 18px);
+            padding: clamp(20px, 2.8vh, 35px) clamp(20px, 3vw, 60px);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #view-preround .briefing-slide.active {
+            display: flex !important;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        #view-preround .briefing-slide.exiting {
+            display: none !important;
+        }
+
+        #view-preround .slide-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.4em, 3.2vw, 2.4em);
+            margin-top: 0;
+            margin-bottom: 0;
+            text-align: center;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            flex-shrink: 0;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        /* Slide Group Wrapper - Groups title and content */
+        #view-preround .slide-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(12px, 2vh, 22px);
+            width: 100%;
+            max-width: 1400px;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Welcome Slide Styles */
+        @keyframes welcomePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes welcomeGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 30px rgba(255, 215, 0, 0.5), 0 0 60px rgba(255, 215, 0, 0.3);
+            }
+
+            50% {
+                text-shadow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 100px rgba(255, 215, 0, 0.5), 0 0 150px rgba(255, 215, 0, 0.3);
+            }
+        }
+
+        @keyframes iconFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+        }
+
+        #view-preround .welcome-slide {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            gap: 20px;
+        }
+
+        #view-preround .welcome-icon {
+            font-size: clamp(4em, 10vw, 8em);
+            animation: iconFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+        }
+
+        #view-preround .welcome-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.5em, 4vw, 2.5em);
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 8px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        #view-preround .welcome-main-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5em, 8vw, 5em);
+            font-weight: 900;
+            color: var(--gold);
+            letter-spacing: 6px;
+            margin: 0;
+            text-transform: uppercase;
+            animation: welcomeGlow 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #view-preround .welcome-subtitle {
+            font-size: clamp(1.2em, 3vw, 1.8em);
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 3px;
+            margin: 10px 0 30px 0;
+        }
+
+        #view-preround .welcome-tagline {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #view-preround .welcome-tagline span {
+            font-size: clamp(1em, 2.5vw, 1.4em);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            animation: welcomePulse 2s ease-in-out infinite;
+        }
+
+        #view-preround .welcome-tagline span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        #view-preround .welcome-tagline span:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        #view-preround .welcome-tagline span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        #view-preround .slide-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(15px, 2.5vw, 25px);
+            width: 100%;
+            max-width: 1100px;
+            align-items: start;
+            justify-items: center;
+            margin: 0;
+            padding: 0;
+
+            /* CRITICAL: Prevent vertical overflow */
+            max-height: calc(100vh - 140px);
+            overflow: hidden;
+        }
+
+        #view-preround .slide-content.centered-cards {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 950px;
+            gap: clamp(10px, 1.8vw, 18px);
+            max-height: calc(100vh - 240px);
+        }
+
+        /* Slide 3 specific - 4 cards dalam 2x2 grid */
+        #view-preround .briefing-slide[data-slide="3"] .slide-content {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 950px;
+            gap: clamp(12px, 1.8vw, 18px);
+            max-height: calc(100vh - 240px);
+        }
+
+        #view-preround .briefing-slide[data-slide="3"] .info-card.large-card {
+            padding: clamp(14px, 2vh, 20px) clamp(16px, 2vw, 22px);
+            max-width: 100%;
+            gap: clamp(6px, 1vh, 10px);
+        }
+
+        #view-preround .briefing-slide[data-slide="3"] .card-icon {
+            font-size: clamp(2.2em, 3.5vw, 2.8em);
+            margin-bottom: clamp(6px, 0.8vh, 10px);
+        }
+
+        #view-preround .briefing-slide[data-slide="3"] .card-text strong {
+            font-size: clamp(1.05em, 1.4vw, 1.2em);
+            margin-bottom: clamp(4px, 0.6vh, 8px);
+        }
+
+        #view-preround .briefing-slide[data-slide="3"] .big-number {
+            font-size: clamp(1.8em, 3vw, 2.4em) !important;
+            margin: clamp(4px, 0.8vh, 8px) 0;
+        }
+
+        #view-preround .briefing-slide[data-slide="3"] .card-text .note {
+            font-size: clamp(0.8em, 1vw, 0.95em);
+            line-height: 1.3;
+            margin-top: clamp(4px, 0.6vh, 6px);
+        }
+
+        /* Special layout for slides with 3 cards: 2 top + 1 centered bottom */
+        #view-preround .slide-content[data-cards="3"] {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 800px;
+        }
+
+        #view-preround .slide-content[data-cards="3"] .info-card:nth-child(3) {
+            grid-column: 1 / -1;
+            max-width: 50%;
+            justify-self: center;
+        }
+
+        /* Special layout for slides with 5 cards: 3 top + 2 centered bottom */
+        #view-preround .slide-content[data-cards="5"] {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 1100px;
+            gap: clamp(16px, 2.2vw, 22px);
+        }
+
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(1),
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(2),
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(3) {
+            grid-column: span 1;
+        }
+
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(1) {
+            grid-column: 1 / 2;
+        }
+
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(2) {
+            grid-column: 2 / 3;
+        }
+
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(3) {
+            grid-column: 3 / 4;
+        }
+
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(4) {
+            grid-column: 2 / 3;
+        }
+
+        #view-preround .slide-content[data-cards="5"] .info-card:nth-child(5) {
+            grid-column: 3 / 4;
+        }
+
+        /* Handle two-col card in 5-card layout */
+        #view-preround .slide-content[data-cards="5"] .info-card.two-col {
+            grid-column: 2 / 4;
+            max-width: 100%;
+        }
+
+        /* Special layout for slides with 6 cards: 3x2 grid */
+        #view-preround .slide-content[data-cards="6"] {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1100px;
+        }
+
+        /* Special layout for slides with 8 cards: 3 cols, last 2 centered */
+        #view-preround .slide-content[data-cards="8"] {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1150px;
+            gap: clamp(12px, 1.8vw, 18px);
+            max-height: calc(100vh - 160px);
+        }
+
+        #view-preround .slide-content[data-cards="8"] .info-card {
+            padding: clamp(14px, 2vh, 20px) clamp(16px, 2vw, 22px);
+        }
+
+        #view-preround .slide-content[data-cards="8"] .card-icon {
+            font-size: 2.2em;
+            margin-bottom: 4px;
+        }
+
+        #view-preround .slide-content[data-cards="8"] .card-text strong {
+            font-size: 1.15em;
+        }
+
+        #view-preround .slide-content[data-cards="8"] .card-text p {
+            font-size: 1em;
+        }
+
+        #view-preround .slide-content[data-cards="8"] .info-card:nth-child(7) {
+            grid-column: 1 / 2;
+            justify-self: end;
+        }
+
+        #view-preround .slide-content[data-cards="8"] .info-card:nth-child(8) {
+            grid-column: 3 / 4;
+            justify-self: start;
+        }
+
+        /* SLIDE-SPECIFIC STYLES */
+
+        /* Slide 2: Gambaran Umum Battle of Bids - 8 cards dengan layout optimal */
+        #view-preround .briefing-slide[data-slide="2"] .slide-content {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 1200px;
+            gap: clamp(14px, 2vw, 20px);
+            max-height: calc(100vh - 150px);
+        }
+
+        /* Row 1: Cards 1-4 */
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(1),
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(2),
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(3),
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(4) {
+            grid-column: span 1;
+        }
+
+        /* Row 2: Cards 5-8 */
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(5),
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(6),
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(7),
+        #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(8) {
+            grid-column: span 1;
+        }
+
+        /* Smaller cards untuk fit 4x2 grid tapi dengan font yang lebih besar */
+        #view-preround .briefing-slide[data-slide="2"] .info-card {
+            padding: clamp(14px, 2vh, 20px) clamp(16px, 2vw, 24px);
+        }
+
+        #view-preround .briefing-slide[data-slide="2"] .card-icon {
+            font-size: 2.5em;
+            margin-bottom: 6px;
+        }
+
+        #view-preround .briefing-slide[data-slide="2"] .card-text strong {
+            font-size: 1.3em;
+            margin-bottom: 8px;
+        }
+
+        #view-preround .briefing-slide[data-slide="2"] .card-text p {
+            font-size: 1.21em;
+            line-height: 1.5;
+        }
+
+        /* Slide 4: Poin Dasar & Aturan Bidding - Mixed content (points-grid + cards) */
+        #view-preround .briefing-slide[data-slide="4"] .slide-content {
+            grid-template-columns: 1fr;
+            max-width: 1200px;
+            gap: clamp(25px, 3vh, 40px);
+            align-content: center;
+        }
+
+        /* Points grid lebih prominent */
+        #view-preround .briefing-slide[data-slide="4"] .points-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(20px, 2.5vw, 35px);
+            max-width: 1000px;
+            margin: 0 auto;
+            grid-column: 1 / -1;
+        }
+
+        #view-preround .briefing-slide[data-slide="4"] .point-card {
+            padding: clamp(20px, 3vh, 30px);
+            border-width: 3px;
+        }
+
+        #view-preround .briefing-slide[data-slide="4"] .point-value {
+            font-size: clamp(3em, 5vw, 4.5em);
+        }
+
+        #view-preround .briefing-slide[data-slide="4"] .point-label {
+            font-size: 1.1em;
+            letter-spacing: 2px;
+        }
+
+        /* Info cards di bawah dalam 3-column grid */
+        #view-preround .briefing-slide[data-slide="4"] .slide-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto auto;
+        }
+
+        /* Points-grid span full width di row pertama */
+        #view-preround .briefing-slide[data-slide="4"] .points-grid {
+            grid-column: 1 / -1;
+            grid-row: 1;
+        }
+
+        /* Info cards di row kedua, 3 kolom */
+        #view-preround .briefing-slide[data-slide="4"] .info-card {
+            grid-row: 2;
+            padding: clamp(18px, 2.5vh, 26px) clamp(20px, 2.5vw, 28px);
+        }
+
+        /* Slide 5: Mekanisme Bid & Bel - 5 cards (3 top, 2 bottom centered) */
+        #view-preround .briefing-slide[data-slide="5"] .slide-content {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 1200px;
+            gap: clamp(18px, 2.5vw, 28px);
+            align-items: start;
+        }
+
+        /* Row 1: Cards 1-3 spanning 2 columns each */
+        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(1) {
+            grid-column: 1 / 3;
+        }
+
+        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(2) {
+            grid-column: 3 / 5;
+        }
+
+        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(3) {
+            grid-column: 5 / 7;
+        }
+
+        /* Row 2: Cards 4-5 centered, each spanning 2 columns with gap in middle */
+        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(4) {
+            grid-column: 2 / 4;
+        }
+
+        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(5) {
+            grid-column: 4 / 6;
+        }
+
+        /* Larger cards for better readability */
+        #view-preround .briefing-slide[data-slide="5"] .info-card {
+            padding: clamp(20px, 2.8vh, 30px) clamp(22px, 2.8vw, 32px);
+        }
+
+        /* Slide 7: Penentuan Pemenang & Penilaian - 5 cards dengan two-col special */
+        #view-preround .briefing-slide[data-slide="7"] .slide-content {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 1200px;
+            gap: clamp(20px, 2.8vw, 32px);
+            align-items: start;
+        }
+
+        /* Row 1: Cards 1-3 spanning 2 columns each */
+        #view-preround .briefing-slide[data-slide="7"] .info-card:nth-child(1) {
+            grid-column: 1 / 3;
+        }
+
+        #view-preround .briefing-slide[data-slide="7"] .info-card:nth-child(2) {
+            grid-column: 3 / 5;
+        }
+
+        #view-preround .briefing-slide[data-slide="7"] .info-card:nth-child(3) {
+            grid-column: 5 / 7;
+        }
+
+        /* Row 2: Card 4 (Waktu Menjawab) centered, larger */
+        #view-preround .briefing-slide[data-slide="7"] .info-card:nth-child(4) {
+            grid-column: 2 / 4;
+        }
+
+        /* Row 2: Card 5 (Two-col card) spanning 2 columns */
+        #view-preround .briefing-slide[data-slide="7"] .info-card:nth-child(5) {
+            grid-column: 4 / 6;
+        }
+
+        /* Special styling for highlight card (Waktu Menjawab) */
+        #view-preround .briefing-slide[data-slide="7"] .info-card.highlight-card {
+            padding: clamp(24px, 3.2vh, 36px) clamp(26px, 3.2vw, 38px);
+        }
+
+        #view-preround .briefing-slide[data-slide="7"] .info-card.highlight-card .big-number {
+            font-size: 3em;
+        }
+
+        /* Slide 8: Pelemparan & Kondisi Khusus - 6 cards dengan layout 3x2 */
+        #view-preround .briefing-slide[data-slide="8"] .slide-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1150px;
+            gap: clamp(16px, 2.2vw, 26px);
+            align-items: stretch;
+            max-height: calc(100vh - 170px);
+            padding-top: 0;
+        }
+
+        /* Row 1: Cards 1-3 */
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(1),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(2),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(3) {
+            grid-column: span 1;
+        }
+
+        /* Row 2: Card 4 (two-col) spans 1.5 columns */
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(4) {
+            grid-column: span 1;
+        }
+
+        /* Row 2: Card 5 spans 1 column */
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(5) {
+            grid-column: span 1;
+        }
+
+        /* Row 3: Card 6 (Kondisi Skorsing) centered, spanning last column */
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(6) {
+            grid-column: span 1;
+        }
+
+        /* Padding seragam untuk semua cards */
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(1),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(2),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(3),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(4),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(5),
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(6) {
+            padding: clamp(16px, 2.2vh, 24px) clamp(18px, 2.2vw, 26px);
+        }
+
+        /* Highlight big-number in Durasi Pelemparan */
+        #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(2) .big-number {
+            font-size: clamp(2.5em, 4vw, 3em);
+            font-weight: 800;
+            margin: clamp(3px, 0.6vh, 6px) 0;
+        }
+
+        /* Icon size untuk cards di slide 8 */
+        #view-preround .briefing-slide[data-slide="8"] .card-icon {
+            font-size: clamp(2.3em, 3.5vw, 2.8em);
+            margin-bottom: clamp(6px, 0.8vh, 10px);
+        }
+
+        /* Text size untuk cards di slide 8 */
+        #view-preround .briefing-slide[data-slide="8"] .card-text strong {
+            font-size: clamp(1.1em, 1.5vw, 1.3em);
+            margin-bottom: clamp(4px, 0.6vh, 8px);
+            display: block;
+        }
+
+        #view-preround .briefing-slide[data-slide="8"] .card-text p {
+            font-size: clamp(0.95em, 1.2vw, 1.08em);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Gap internal pada card di slide 8 */
+        #view-preround .briefing-slide[data-slide="8"] .info-card {
+            gap: clamp(6px, 0.9vh, 10px);
+        }
+
+        #view-preround .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
+            padding: clamp(18px, 2.5vh, 26px) clamp(18px, 2.5vw, 26px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            animation-delay: calc(var(--delay, 0) * 0.08s);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform, opacity;
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+        }
+
+        #view-preround .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        #view-preround .info-card.highlight-card {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.15), rgba(233, 69, 96, 0.08));
+            border-color: rgba(233, 69, 96, 0.4);
+        }
+
+        #view-preround .info-card.gold-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.05));
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        #view-preround .info-card.warning-card {
+            background: linear-gradient(135deg, rgba(255, 179, 71, 0.12), rgba(255, 179, 71, 0.05));
+            border-color: rgba(255, 179, 71, 0.4);
+        }
+
+        #view-preround .info-card.danger-card {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.12), rgba(255, 71, 87, 0.05));
+            border-color: rgba(255, 71, 87, 0.4);
+        }
+
+        #view-preround .info-card.large-card {
+            padding: 26px 30px;
+        }
+
+        #view-preround .info-card.large-card .card-icon {
+            font-size: 3.2em;
+            margin-bottom: 12px;
+        }
+
+        #view-preround .info-card.large-card .card-text {
+            text-align: center;
+        }
+
+        #view-preround .card-icon {
+            font-size: 3.5em;
+            flex-shrink: 0;
+            margin-bottom: 8px;
+        }
+
+        #view-preround .card-text {
+            flex: 1;
+            text-align: center;
+            width: 100%;
+        }
+
+        #view-preround .card-text strong {
+            display: block;
+            font-size: 1.6em;
+            color: var(--highlight);
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        #view-preround .card-text p {
+            font-size: 1.35em;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        #view-preround .card-text p b {
+            color: var(--gold);
+        }
+
+        #view-preround .card-text .big-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--gold);
+            margin: 12px 0;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        #view-preround .card-text .note {
+            font-size: 0.88em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        #view-preround .info-card.two-col {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            padding: 0;
+            overflow: hidden;
+            flex-direction: unset;
+            flex: 0 1 520px;
+            min-width: 420px;
+            max-width: 580px;
+        }
+
+        #view-preround .info-card.two-col .col {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+        }
+
+        #view-preround .info-card.two-col .col .card-icon {
+            font-size: 2em;
+            margin-bottom: 0;
+        }
+
+        #view-preround .info-card.two-col .col strong {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        #view-preround .info-card.two-col .col p {
+            font-size: 1.25em;
+            font-weight: 700;
+        }
+
+        #view-preround .info-card.two-col .success-col {
+            background: linear-gradient(135deg, rgba(0, 210, 106, 0.18), rgba(0, 210, 106, 0.08));
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px 0 0 18px;
+        }
+
+        #view-preround .info-card.two-col .success-col p {
+            color: #00d26a;
+        }
+
+        #view-preround .info-card.two-col .danger-col {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.18), rgba(255, 71, 87, 0.08));
+            border-radius: 0 18px 18px 0;
+        }
+
+        #view-preround .info-card.two-col .danger-col p {
+            color: #ff4757;
+        }
+
+        #view-preround .points-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(15px, 2vw, 20px);
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto clamp(18px, 2.5vh, 28px);
+            grid-column: 1 / -1;
+        }
+
+        #view-preround .point-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 16px;
+            padding: clamp(16px, 2.5vh, 22px);
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            animation-delay: calc(var(--delay, 0) * 0.08s);
+            transition: transform 0.3s ease;
+            will-change: transform, opacity;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            aspect-ratio: 1;
+        }
+
+        #view-preround .point-card:hover {
+            transform: scale(1.05);
+        }
+
+        #view-preround .point-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5em, 4vw, 3.5em);
+            font-weight: 900;
+            color: var(--gold);
+            display: block;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        #view-preround .point-label {
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.65);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 6px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            #view-preround .briefing-slide.active,
+            #view-preround .info-card,
+            #view-preround .point-card,
+            #view-preround .slide-title,
+            #view-preround .info-card.large-card .card-icon {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            #view-preround .info-card:hover,
+            #view-preround .point-card:hover {
+                transform: none !important;
+            }
+        }
+
+        /* Hide everything else during preround */
+        body:has(#view-preround:not(.hidden)) .scoreboard,
+        body:has(#view-preround:not(.hidden)) header,
+        body:has(#view-preround:not(.hidden)) .container>*:not(#game-area) {
+            display: none !important;
+        }
+
+        body:has(#view-preround:not(.hidden)) .container {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        body:has(#view-preround:not(.hidden)) #game-area {
+            height: 100vh !important;
+            padding: 0 !important;
+        }
+
+        /* Landscape mode - maintain 2-column grid */
+        @media (orientation: landscape) {
+            #view-preround .briefing-slide {
+                padding: 25px 40px;
+            }
+
+            #view-preround .slide-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #view-preround .slide-content.centered-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #view-preround .slide-title {
+                font-size: clamp(1.6em, 3.5vw, 2.6em);
+            }
+
+            #view-preround .card-icon {
+                font-size: 2em;
+            }
+
+            #view-preround .card-text strong {
+                font-size: 1.2em;
+            }
+
+            #view-preround .card-text p {
+                font-size: 1.21em;
+            }
+
+            #view-preround .point-card {
+                padding: 14px 28px;
+            }
+
+            #view-preround .point-value {
+                font-size: clamp(1.8em, 3vw, 2.4em);
+            }
+
+            /* Slide 4 landscape optimization */
+            #view-preround .briefing-slide[data-slide="4"] .slide-content {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            #view-preround .briefing-slide[data-slide="4"] .points-grid {
+                gap: clamp(18px, 2.2vw, 28px);
+            }
+        }
+
+        /* Smaller width screens - mobile layout */
+        @media (max-width: 768px) {
+            #view-preround .briefing-slide {
+                padding: 20px 15px;
+            }
+
+            #view-preround .slide-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                max-width: 480px;
+            }
+
+            #view-preround .slide-content.centered-cards {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+            }
+
+            #view-preround .slide-content[data-cards="5"],
+            #view-preround .slide-content[data-cards="6"],
+            #view-preround .slide-content[data-cards="8"] {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            /* Slide 2 mobile override */
+            #view-preround .briefing-slide[data-slide="2"] .slide-content {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            #view-preround .briefing-slide[data-slide="2"] .info-card:nth-child(n) {
+                grid-column: auto;
+            }
+
+            /* Slide 4 mobile override */
+            #view-preround .briefing-slide[data-slide="4"] .slide-content {
+                grid-template-columns: 1fr;
+                gap: clamp(18px, 2.5vh, 25px);
+            }
+
+            #view-preround .briefing-slide[data-slide="4"] .points-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            #view-preround .briefing-slide[data-slide="4"] .info-card {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            /* Slide 5 mobile override */
+            #view-preround .briefing-slide[data-slide="5"] .slide-content {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(n) {
+                grid-column: auto !important;
+            }
+
+            /* Slide 7 mobile override */
+            #view-preround .briefing-slide[data-slide="7"] .slide-content {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+            }
+
+            #view-preround .briefing-slide[data-slide="7"] .info-card:nth-child(n) {
+                grid-column: auto !important;
+            }
+
+            #view-preround .briefing-slide[data-slide="7"] .info-card.two-col {
+                grid-column: auto !important;
+            }
+
+            /* Slide 8 mobile override */
+            #view-preround .briefing-slide[data-slide="8"] .slide-content {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(n) {
+                grid-column: auto !important;
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .info-card.two-col {
+                grid-column: auto !important;
+            }
+
+            /* Reset special positioning for mobile */
+            #view-preround .slide-content[data-cards="5"] .info-card:nth-child(1),
+            #view-preround .slide-content[data-cards="5"] .info-card:nth-child(2),
+            #view-preround .slide-content[data-cards="5"] .info-card:nth-child(3),
+            #view-preround .slide-content[data-cards="5"] .info-card:nth-child(4),
+            #view-preround .slide-content[data-cards="5"] .info-card:nth-child(5) {
+                grid-column: auto;
+                justify-self: stretch;
+            }
+
+            #view-preround .slide-content[data-cards="5"] .info-card.two-col {
+                grid-column: auto;
+            }
+
+            #view-preround .slide-content[data-cards="8"] .info-card:nth-child(7),
+            #view-preround .slide-content[data-cards="8"] .info-card:nth-child(8) {
+                grid-column: auto;
+                justify-self: stretch;
+            }
+
+            #view-preround .points-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            #view-preround .slide-title {
+                font-size: 1.4em;
+            }
+
+            #view-preround .info-card {
+                padding: 14px 18px;
+            }
+
+            #view-preround .point-card {
+                padding: 14px 20px;
+                aspect-ratio: auto;
+            }
+        }
+
+        /* Shorter screens - compact layout, NO SCROLL */
+        @media (max-height: 700px) {
+            #view-preround .briefing-slide {
+                gap: 8px;
+                padding: 12px 20px;
+            }
+
+            #view-preround .slide-title {
+                font-size: 1.25em;
+            }
+
+            #view-preround .slide-content {
+                max-height: calc(100vh - 95px);
+                gap: clamp(10px, 1.5vw, 15px);
+            }
+
+            #view-preround .slide-content[data-cards="8"] {
+                gap: clamp(8px, 1.2vw, 12px);
+                max-height: calc(100vh - 90px);
+            }
+
+            /* Slide 2 shorter screen optimization */
+            #view-preround .briefing-slide[data-slide="2"] .slide-content {
+                gap: clamp(8px, 1.5vw, 12px);
+                max-height: calc(100vh - 85px);
+            }
+
+            #view-preround .briefing-slide[data-slide="2"] .info-card {
+                padding: 6px 10px;
+            }
+
+            #view-preround .briefing-slide[data-slide="2"] .card-icon {
+                font-size: 1.5em;
+            }
+
+            #view-preround .briefing-slide[data-slide="2"] .card-text strong {
+                font-size: 0.9em;
+                margin-bottom: 4px;
+            }
+
+            #view-preround .briefing-slide[data-slide="2"] .card-text p {
+                font-size: 0.8em;
+                line-height: 1.3;
+            }
+
+            /* Slide 4 shorter screen optimization */
+            #view-preround .briefing-slide[data-slide="4"] .slide-content {
+                gap: clamp(15px, 2vh, 22px);
+            }
+
+            #view-preround .briefing-slide[data-slide="4"] .points-grid {
+                gap: clamp(12px, 1.8vw, 18px);
+            }
+
+            #view-preround .briefing-slide[data-slide="4"] .point-card {
+                padding: clamp(14px, 2vh, 18px);
+            }
+
+            #view-preround .briefing-slide[data-slide="4"] .point-value {
+                font-size: clamp(2em, 3.5vw, 3em);
+            }
+
+            /* Slide 5 shorter screen optimization */
+            #view-preround .briefing-slide[data-slide="5"] .slide-content {
+                gap: clamp(12px, 2vh, 18px);
+            }
+
+            #view-preround .briefing-slide[data-slide="5"] .info-card {
+                padding: clamp(10px, 1.5vh, 14px) clamp(12px, 2vw, 16px);
+            }
+
+            /* Slide 7 shorter screen optimization */
+            #view-preround .briefing-slide[data-slide="7"] .slide-content {
+                gap: clamp(14px, 2.2vh, 20px);
+            }
+
+            #view-preround .briefing-slide[data-slide="7"] .info-card {
+                padding: clamp(12px, 1.8vh, 16px) clamp(14px, 2vw, 18px);
+            }
+
+            #view-preround .briefing-slide[data-slide="7"] .info-card.highlight-card .big-number {
+                font-size: 2em;
+            }
+
+            /* Slide 8 shorter screen optimization */
+            #view-preround .briefing-slide[data-slide="8"] {
+                gap: 8px;
+                padding: 10px 18px;
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .slide-content {
+                gap: clamp(10px, 1.5vh, 14px);
+                max-height: calc(100vh - 80px);
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .info-card {
+                padding: clamp(10px, 1.5vh, 14px) clamp(12px, 1.8vw, 16px);
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(6) {
+                padding: clamp(12px, 1.8vh, 16px) clamp(14px, 2vw, 18px);
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .info-card:nth-child(2) .big-number {
+                font-size: 2em;
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .card-icon {
+                font-size: 2em;
+                margin-bottom: 4px;
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .card-text strong {
+                font-size: 1.1em;
+                margin-bottom: 6px;
+            }
+
+            #view-preround .briefing-slide[data-slide="8"] .card-text p {
+                font-size: 1em;
+            }
+
+            #view-preround .info-card {
+                padding: 8px 12px;
+                gap: 6px;
+            }
+
+            #view-preround .card-icon {
+                font-size: 1.6em;
+                margin-bottom: 2px;
+            }
+
+            #view-preround .card-text strong {
+                font-size: 0.95em;
+            }
+
+            #view-preround .card-text p {
+                font-size: 0.85em;
+            }
+
+            #view-preround .points-grid {
+                gap: 10px;
+                margin-bottom: clamp(12px, 2vh, 18px);
+            }
+
+            #view-preround .point-card {
+                padding: 10px 16px;
+            }
+
+            #view-preround .point-value {
+                font-size: 1.6em;
+            }
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-height: 800px) {
+            header {
+                margin-bottom: 10px;
+            }
+
+            .scoreboard {
+                margin-bottom: 10px;
+            }
+
+            .view {
+                padding: 15px 20px;
+            }
+
+            .timer-display {
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-height: 600px) {
+            header h1 {
+                font-size: 1.5em;
+            }
+
+            .viewer-badge {
+                font-size: 0.7em;
+                padding: 2px 8px;
+            }
+
+            .team-card {
+                padding: 8px 6px;
+            }
+
+            .view h2 {
+                font-size: 1.2em;
+                margin-bottom: 8px;
+            }
+
+            .timer-display {
+                font-size: 2.5em;
+                margin: 5px 0;
+            }
+        }
+
+        /* Landscape optimizations */
+        @media (orientation: landscape) and (max-height: 700px) {
+            .scoreboard {
+                gap: 8px;
+            }
+
+            .team-card {
+                padding: 8px 10px;
+            }
+
+            .view {
+                padding: 12px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body onclick="handleUserInteraction()">
+    <!-- Back Button -->
+    <button class="back-btn back-btn-fixed" onclick="backToMenu()">← Menu</button>
+
+    <div class="connection-status disconnected" id="connection-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Menunggu Host...</span>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Battle of Bids</h1>
+            <div id="mode-badge" class="viewer-badge hidden">👁️ VIEWER MODE</div>
+            <!-- <div id="game-status">Menunggu Permainan Dimulai...</div> -->
+        </header>
+
+        <!-- Scoreboard Section -->
+        <section id="scoreboard" class="scoreboard">
+            <!-- Team cards will be injected here by JS -->
+        </section>
+
+        <!-- Game Views -->
+        <main id="game-area">
+
+            <!-- View 1: Waiting -->
+            <div id="view-setup" class="view active">
+                <div class="waiting-screen">
+                    <h2>⏳ Menunggu Host</h2>
+                    <p>Permainan akan segera dimulai<span class="pulse-dot"></span></p>
+                </div>
+            </div>
+
+            <!-- View 2: Pre-Round Briefing Slides -->
+            <div id="view-preround" class="view hidden preround-view">
+                <div class="preround-container">
+                    <div class="preround-header">
+                        <h2>📋 Penjelasan Battle of Bids</h2>
+                        <div class="slide-indicator">
+                            <span id="slide-current">1</span> / <span id="slide-total">8</span>
+                        </div>
+                    </div>
+
+                    <div class="slides-wrapper">
+                        <!-- Slide 1: Welcome -->
+                        <div class="briefing-slide active" data-slide="1">
+                            <div class="welcome-slide">
+                                <div class="welcome-icon">⚔️</div>
+                                <h2 class="welcome-title">WELCOME TO</h2>
+                                <h1 class="welcome-main-title">BATTLE OF BIDS</h1>
+                                <p class="welcome-subtitle">Babak Grand Final • Olimpiade Matematika</p>
+                                <div class="welcome-tagline">
+                                    <span>🧠 Strategi</span>
+                                    <span>⚡ Kecepatan</span>
+                                    <span>🎯 Ketepatan</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2: Gambaran Umum -->
+                        <div class="briefing-slide" data-slide="2">
+                            <div class="slide-group">
+                                <h3 class="slide-title">🎯 Gambaran Umum Battle of Bids</h3>
+                                <div class="slide-content" data-cards="8">
+                                    <div class="info-card" style="--delay: 0">
+                                        <span class="card-icon">👥</span>
+                                        <div class="card-text">
+                                            <strong>Peserta</strong>
+                                            <p>Babak diikuti oleh <b>5 tim finalis</b> hasil babak sebelumnya</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 1">
+                                        <span class="card-icon">🏛️</span>
+                                        <div class="card-text">
+                                            <strong>Pelaksanaan</strong>
+                                            <p>Dilaksanakan secara <b>luring (offline)</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 2">
+                                        <span class="card-icon">🏆</span>
+                                        <div class="card-text">
+                                            <strong>Struktur Babak Grand Final</strong>
+                                            <p>Terdiri dari dua ronde: <b>Battle of Bids</b> dan <b>Presentasi</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 3">
+                                        <span class="card-icon">📊</span>
+                                        <div class="card-text">
+                                            <strong>Peringkat Akhir</strong>
+                                            <p>Juara 1, Juara 2, Juara 3, Juara Harapan 1, Juara Harapan 2</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 4">
+                                        <span class="card-icon">🧠</span>
+                                        <div class="card-text">
+                                            <strong>Yang Diuji</strong>
+                                            <p><b>Strategi, Kecepatan, Ketepatan</b> berpikir</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 5">
+                                        <span class="card-icon">💰</span>
+                                        <div class="card-text">
+                                            <strong>Sistem Bidding</strong>
+                                            <p>Tim menggunakan <b>gold</b> untuk memperoleh hak menjawab soal</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 6">
+                                        <span class="card-icon">📚</span>
+                                        <div class="card-text">
+                                            <strong>5 Kategori Soal</strong>
+                                            <p>Kombinatorika, Aljabar Linear, Struktur Aljabar, Analisis Riil, Analisis
+                                                Kompleks</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card highlight-card" style="--delay: 7">
+                                        <span class="card-icon">⏱️</span>
+                                        <div class="card-text">
+                                            <strong>Durasi Ronde</strong>
+                                            <p><b>90 menit</b> total</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: Peserta, Gold & Soal -->
+                        <div class="briefing-slide" data-slide="3">
+                            <div class="slide-group">
+                                <h3 class="slide-title">💎 Peserta, Gold & Soal</h3>
+                                <div class="slide-content centered-cards">
+                                    <div class="info-card large-card" style="--delay: 0">
+                                        <span class="card-icon">👥</span>
+                                        <div class="card-text">
+                                            <strong>Jumlah Peserta</strong>
+                                            <p class="big-number">5 Tim</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card large-card gold-card" style="--delay: 1">
+                                        <span class="card-icon">💰</span>
+                                        <div class="card-text">
+                                            <strong>Saldo Awal Setiap Tim</strong>
+                                            <p class="big-number gold-text">700 Gold</p>
+                                            <p class="note">Gold hanya untuk bidding, tidak untuk poin utama</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card large-card" style="--delay: 2">
+                                        <span class="card-icon">📝</span>
+                                        <div class="card-text">
+                                            <strong>Total Soal</strong>
+                                            <p class="big-number">20 Soal</p>
+                                            <p class="note">Isian singkat</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card large-card" style="--delay: 3">
+                                        <span class="card-icon">📂</span>
+                                        <div class="card-text">
+                                            <strong>Pembagian Soal</strong>
+                                            <p class="big-number">5 Kategori × 4 Soal</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 4: Poin Dasar & Aturan Bidding -->
+                        <div class="briefing-slide" data-slide="4">
+                            <div class="slide-group">
+                                <h3 class="slide-title">⭐ Poin Dasar & Aturan Bidding</h3>
+                                <div class="slide-content">
+                                    <div class="points-grid" style="--delay: 0">
+                                        <div class="point-card">
+                                            <span class="point-value">5</span>
+                                            <span class="point-label">Poin</span>
+                                        </div>
+                                        <div class="point-card">
+                                            <span class="point-value">10</span>
+                                            <span class="point-label">Poin</span>
+                                        </div>
+                                        <div class="point-card">
+                                            <span class="point-value">15</span>
+                                            <span class="point-label">Poin</span>
+                                        </div>
+                                        <div class="point-card">
+                                            <span class="point-value">25</span>
+                                            <span class="point-label">Poin</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 1">
+                                        <span class="card-icon">💵</span>
+                                        <div class="card-text">
+                                            <strong>Harga Awal Bidding</strong>
+                                            <p>Sesuai dengan <b>poin dasar soal</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 2">
+                                        <span class="card-icon">📋</span>
+                                        <div class="card-text">
+                                            <strong>Sebelum Bidding Ditampilkan</strong>
+                                            <p>Kategori, Poin Dasar, Harga Awal</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card highlight-card" style="--delay: 3">
+                                        <span class="card-icon">⏱️</span>
+                                        <div class="card-text">
+                                            <strong>Durasi Bidding</strong>
+                                            <p class="big-number">30 Detik</p>
+                                            <p class="note">per soal</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 5: Mekanisme Bid & Bel -->
+                        <div class="briefing-slide" data-slide="5">
+                            <div class="slide-group">
+                                <h3 class="slide-title">🔔 Mekanisme Bid & Bel</h3>
+                                <div class="slide-content" data-cards="5">
+                                    <div class="info-card" style="--delay: 0">
+                                        <span class="card-icon">📈</span>
+                                        <div class="card-text">
+                                            <strong>Kenaikan Bid</strong>
+                                            <p>Minimal <b>5 gold</b>, Maksimal <b>5× harga awal</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 1">
+                                        <span class="card-icon">🔢</span>
+                                        <div class="card-text">
+                                            <strong>Format Bid</strong>
+                                            <p>Bilangan <b>bulat</b> & <b>kelipatan 5</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card warning-card" style="--delay: 2">
+                                        <span class="card-icon">⚠️</span>
+                                        <div class="card-text">
+                                            <strong>Batas Gold</strong>
+                                            <p>Tim <b>tidak boleh</b> menawar melebihi sisa gold</p>
+                                            <p class="note">Jika melebihi saldo → bid tidak sah</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 3">
+                                        <span class="card-icon">🔔</span>
+                                        <div class="card-text">
+                                            <strong>Sistem Bel</strong>
+                                            <p>Setiap meja tim dilengkapi <b>bel</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card highlight-card" style="--delay: 4">
+                                        <span class="card-icon">⏰</span>
+                                        <div class="card-text">
+                                            <strong>Setelah Menekan Bel</strong>
+                                            <p>Wajib menyebutkan bid dalam <b>5 detik</b></p>
+                                            <p class="note">Jika tidak → hak bidding hangus</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 6: Aturan Lanjutan & Disiplin -->
+                        <div class="briefing-slide" data-slide="6">
+                            <div class="slide-group">
+                                <h3 class="slide-title">📜 Aturan Lanjutan & Disiplin</h3>
+                                <div class="slide-content">
+                                    <div class="info-card" style="--delay: 0">
+                                        <span class="card-icon">🔄</span>
+                                        <div class="card-text">
+                                            <strong>Bid Ulang</strong>
+                                            <p>Tim lain boleh melakukan bid ulang selama <b>waktu masih ada</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 1">
+                                        <span class="card-icon">📈</span>
+                                        <div class="card-text">
+                                            <strong>Menaikkan Bid Sendiri</strong>
+                                            <p>Tim boleh <b>menaikkan bid</b> meskipun sudah menawar sebelumnya</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card danger-card" style="--delay: 2">
+                                        <span class="card-icon">🚫</span>
+                                        <div class="card-text">
+                                            <strong>Pelanggaran Bel</strong>
+                                            <p>Menekan bel berulang untuk mengganggu:</p>
+                                            <p class="note">Peringatan → Skorsing → Diskualifikasi</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card warning-card" style="--delay: 3">
+                                        <span class="card-icon">⚠️</span>
+                                        <div class="card-text">
+                                            <strong>Wajib Bid Minimal</strong>
+                                            <p>Setiap tim wajib melakukan <b>minimal 1 bid</b> di setiap kategori</p>
+                                            <p class="note">Jika tidak: <b>-50 poin</b> per kategori</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 7: Penentuan Pemenang & Penilaian -->
+                        <div class="briefing-slide" data-slide="7">
+                            <div class="slide-group">
+                                <h3 class="slide-title">🏅 Penentuan Pemenang & Penilaian</h3>
+                                <div class="slide-content" data-cards="5">
+                                    <div class="info-card" style="--delay: 0">
+                                        <span class="card-icon">⏱️</span>
+                                        <div class="card-text">
+                                            <strong>Setelah 30 Detik</strong>
+                                            <p>Tim dengan <b>bid tertinggi</b> memenangkan bidding</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card warning-card" style="--delay: 1">
+                                        <span class="card-icon">💸</span>
+                                        <div class="card-text">
+                                            <strong>Gold Pemenang</strong>
+                                            <p><b>Dipotong & tidak dikembalikan</b></p>
+                                            <p class="note">Gold tidak dapat dikonversi menjadi poin utama</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 2">
+                                        <span class="card-icon">📄</span>
+                                        <div class="card-text">
+                                            <strong>Tampilan Soal</strong>
+                                            <p>Soal ditampilkan <b>setelah bidding selesai</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card highlight-card" style="--delay: 3">
+                                        <span class="card-icon">⏰</span>
+                                        <div class="card-text">
+                                            <strong>Waktu Menjawab</strong>
+                                            <p class="big-number">3 Menit</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card two-col" style="--delay: 4">
+                                        <div class="col success-col">
+                                            <span class="card-icon">✅</span>
+                                            <strong>Jawaban Benar</strong>
+                                            <p>+ Poin Dasar</p>
+                                        </div>
+                                        <div class="col danger-col">
+                                            <span class="card-icon">❌</span>
+                                            <strong>Salah / Kosong</strong>
+                                            <p>− Poin Dasar</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 8: Pelemparan & Kondisi Khusus -->
+                        <div class="briefing-slide" data-slide="8">
+                            <div class="slide-group">
+                                <h3 class="slide-title">🔄 Pelemparan & Kondisi Khusus</h3>
+                                <div class="slide-content" data-cards="5">
+                                    <div class="info-card" style="--delay: 0">
+                                        <span class="card-icon">🎯</span>
+                                        <div class="card-text">
+                                            <strong>Pelemparan Soal</strong>
+                                            <p>Jika pemenang awal <b>salah</b>, soal dapat dilempar <b>1 kali</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 1">
+                                        <span class="card-icon">⏱️</span>
+                                        <div class="card-text">
+                                            <strong>Durasi Pelemparan</strong>
+                                            <p class="big-number">10 Detik</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 2">
+                                        <span class="card-icon">💰</span>
+                                        <div class="card-text">
+                                            <strong>Bid Pelemparan</strong>
+                                            <p>Sama dengan <b>bid pemenang awal</b></p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card two-col" style="--delay: 3">
+                                        <div class="col success-col">
+                                            <span class="card-icon">✅</span>
+                                            <strong>Benar</strong>
+                                            <p><b>+80%</b> poin dasar</p>
+                                        </div>
+                                        <div class="col danger-col">
+                                            <span class="card-icon">❌</span>
+                                            <strong>Salah</strong>
+                                            <p><b>−100%</b> poin dasar</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card danger-card" style="--delay: 4">
+                                        <span class="card-icon">🚫</span>
+                                        <div class="card-text">
+                                            <strong>Tidak Ada Bid</strong>
+                                            <p>Semua tim <b>−5 poin</b>, soal hangus</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card warning-card" style="--delay: 5">
+                                        <span class="card-icon">⚠️</span>
+                                        <div class="card-text">
+                                            <strong>Kondisi Skorsing</strong>
+                                            <p>Tim menang <b>3 bidding berturut-turut</b> tapi salah semua:</p>
+                                            <p class="note">Diskors 1 soal berikutnya</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-progress">
+                            <div class="slide-dots" id="slide-dots">
+                                <!-- Dots injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 3: Question Board -->
+            <div id="view-board" class="view hidden">
+                <h2>📋 Papan Soal</h2>
+                <div id="question-grid" class="question-grid">
+                    <!-- Grid items injected by JS -->
+                </div>
+            </div>
+
+            <!-- View 3: Bidding Phase -->
+            <div id="view-bidding" class="view hidden">
+                <div class="phase-header">
+                    <h2 id="bid-category">Kategori</h2>
+                    <div class="question-stats">
+                        <span>Poin Dasar: <b id="bid-points">0</b></span>
+                        <span>Harga Awal: <b id="bid-price">0</b></span>
+                    </div>
+                </div>
+
+                <div class="timer-display">
+                    <span id="bid-timer">30</span> <small>detik</small>
+                </div>
+
+                <div class="current-bid-info">
+                    <p>💰 Bid Tertinggi: <span id="highest-bid-amount">0</span> Gold</p>
+                    <p>👤 Oleh: <span id="highest-bidder-name">-</span></p>
+                </div>
+            </div>
+
+            <!-- View 4: Answering Phase -->
+            <div id="view-answering" class="view hidden">
+                <h2>🎯 Fase Menjawab</h2>
+                <p class="answering-team-display"><b id="answering-team">-</b></p>
+                <p style="font-size: clamp(0.9em, 1.3vw, 1.15em); color: var(--text-muted);">Waktu Menjawab: 3 Menit
+                </p>
+
+                <div class="question-image-container">
+                    <img id="question-image-viewer" src="question_placeholder.svg" alt="Soal">
+                </div>
+
+                <div class="timer-display">
+                    <span id="answer-timer">180</span> <small>detik</small>
+                </div>
+            </div>
+
+            <!-- View 5: Re-Bidding (Pelemparan) Phase -->
+            <div id="view-rebidding" class="view hidden">
+                <h2>🔄 Pelemparan Soal</h2>
+                <p>⚡ Siapa Cepat Dia Dapat!</p>
+                <p>Harga: <b id="rebid-price">0</b> Gold</p>
+
+                <div class="timer-display">
+                    <span id="rebid-timer">10</span> <small>detik</small>
+                </div>
+            </div>
+
+            <!-- View 6: Re-Answering Phase -->
+            <div id="view-reanswering" class="view hidden">
+                <h2>🎯 Menjawab Lemparan</h2>
+                <p class="answering-team-display">Tim: <b id="reanswering-team">-</b></p>
+                <p>✅ Benar: +80% Poin | ❌ Salah: -100% Poin</p>
+            </div>
+
+            <!-- View 7: Game Finished -->
+            <div id="view-finished" class="view hidden">
+                <div class="waiting-screen">
+                    <h2>🏆 Permainan Selesai!</h2>
+                    <p>Terima kasih telah bermain</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Answer Result Modal (Benar/Salah) -->
+        <div id="answer-result-modal" class="answer-result-modal hidden">
+            <div class="result-content">
+                <div id="result-icon" class="result-icon">✓</div>
+                <div id="result-text" class="result-text">BENAR!</div>
+                <div id="result-points" class="result-points">+25 Poin</div>
+            </div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="viewer.js"></script>
+</body>
+
+</html>
