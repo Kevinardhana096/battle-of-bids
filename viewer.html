@@ -793,40 +793,75 @@
             padding: clamp(18px, 2.5vh, 26px) clamp(20px, 2.5vw, 28px);
         }
 
-        /* Slide 5: Mekanisme Bid & Bel - 5 cards (3 top, 2 bottom centered) */
+        /* Slide 5: Mekanisme Bid & Bel - 6 cards dalam 3x2 grid */
         #view-preround .briefing-slide[data-slide="5"] .slide-content {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            max-width: 1200px;
-            gap: clamp(18px, 2.5vw, 28px);
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1150px;
+            gap: clamp(18px, 2.5vw, 25px);
             align-items: start;
         }
 
-        /* Row 1: Cards 1-3 spanning 2 columns each */
-        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(1) {
-            grid-column: 1 / 3;
-        }
-
-        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(2) {
-            grid-column: 3 / 5;
-        }
-
-        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(3) {
-            grid-column: 5 / 7;
-        }
-
-        /* Row 2: Cards 4-5 centered, each spanning 2 columns with gap in middle */
-        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(4) {
-            grid-column: 2 / 4;
-        }
-
-        #view-preround .briefing-slide[data-slide="5"] .info-card:nth-child(5) {
-            grid-column: 4 / 6;
-        }
-
-        /* Larger cards for better readability */
+        /* Cards otomatis tersusun 3 per row */
         #view-preround .briefing-slide[data-slide="5"] .info-card {
-            padding: clamp(20px, 2.8vh, 30px) clamp(22px, 2.8vw, 32px);
+            padding: clamp(18px, 2.5vh, 26px) clamp(20px, 2.5vw, 28px);
+        }
+
+        #view-preround .briefing-slide[data-slide="5"] .card-icon {
+            font-size: clamp(2.5em, 4vw, 3em);
+            margin-bottom: clamp(6px, 1vh, 10px);
+        }
+
+        #view-preround .briefing-slide[data-slide="5"] .card-text strong {
+            font-size: clamp(1.1em, 1.5vw, 1.3em);
+            margin-bottom: clamp(6px, 1vh, 10px);
+        }
+
+        #view-preround .briefing-slide[data-slide="5"] .card-text p {
+            font-size: clamp(0.95em, 1.2vw, 1.1em);
+            line-height: 1.4;
+        }
+
+        /* Slide 6: Aturan Lanjutan & Disiplin - 3 cards (2 top, 1 centered bottom) */
+        #view-preround .briefing-slide[data-slide="6"] .slide-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 900px;
+            gap: clamp(20px, 2.8vw, 30px);
+            align-items: start;
+        }
+
+        /* Cards 1-2 di row pertama */
+        #view-preround .briefing-slide[data-slide="6"] .info-card:nth-child(1),
+        #view-preround .briefing-slide[data-slide="6"] .info-card:nth-child(2) {
+            grid-column: span 1;
+        }
+
+        /* Card 3 centered di row kedua */
+        #view-preround .briefing-slide[data-slide="6"] .info-card:nth-child(3) {
+            grid-column: 1 / -1;
+            max-width: 50%;
+            justify-self: center;
+        }
+
+        /* Styling cards untuk slide 6 */
+        #view-preround .briefing-slide[data-slide="6"] .info-card {
+            padding: clamp(20px, 2.8vh, 28px) clamp(22px, 2.8vw, 30px);
+        }
+
+        #view-preround .briefing-slide[data-slide="6"] .card-icon {
+            font-size: clamp(2.8em, 4.5vw, 3.5em);
+            margin-bottom: clamp(8px, 1.2vh, 12px);
+        }
+
+        #view-preround .briefing-slide[data-slide="6"] .card-text strong {
+            font-size: clamp(1.15em, 1.6vw, 1.4em);
+            margin-bottom: clamp(8px, 1.2vh, 12px);
+        }
+
+        #view-preround .briefing-slide[data-slide="6"] .card-text p {
+            font-size: clamp(1em, 1.3vw, 1.15em);
+            line-height: 1.5;
         }
 
         /* Slide 7: Penentuan Pemenang & Penilaian - 5 cards dengan two-col special */
@@ -1795,7 +1830,7 @@
                         <div class="briefing-slide" data-slide="5">
                             <div class="slide-group">
                                 <h3 class="slide-title">🔔 Mekanisme Bid & Bel</h3>
-                                <div class="slide-content" data-cards="5">
+                                <div class="slide-content" data-cards="6">
                                     <div class="info-card" style="--delay: 0">
                                         <span class="card-icon">📈</span>
                                         <div class="card-text">
@@ -1818,14 +1853,22 @@
                                             <p class="note">Jika melebihi saldo → bid tidak sah</p>
                                         </div>
                                     </div>
-                                    <div class="info-card" style="--delay: 3">
+                                    <div class="info-card warning-card" style="--delay: 3">
+                                        <span class="card-icon">⚠️</span>
+                                        <div class="card-text">
+                                            <strong>Wajib Bid Minimal</strong>
+                                            <p>Setiap tim wajib melakukan <b>minimal 1 bid</b> di setiap kategori</p>
+                                            <p class="note">Jika tidak: <b>-50 poin</b> per kategori</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-card" style="--delay: 4">
                                         <span class="card-icon">🔔</span>
                                         <div class="card-text">
                                             <strong>Sistem Bel</strong>
                                             <p>Setiap meja tim dilengkapi <b>bel</b></p>
                                         </div>
                                     </div>
-                                    <div class="info-card highlight-card" style="--delay: 4">
+                                    <div class="info-card highlight-card" style="--delay: 5">
                                         <span class="card-icon">⏰</span>
                                         <div class="card-text">
                                             <strong>Setelah Menekan Bel</strong>
@@ -1862,14 +1905,6 @@
                                             <strong>Pelanggaran Bel</strong>
                                             <p>Menekan bel berulang untuk mengganggu:</p>
                                             <p class="note">Peringatan → Skorsing → Diskualifikasi</p>
-                                        </div>
-                                    </div>
-                                    <div class="info-card warning-card" style="--delay: 3">
-                                        <span class="card-icon">⚠️</span>
-                                        <div class="card-text">
-                                            <strong>Wajib Bid Minimal</strong>
-                                            <p>Setiap tim wajib melakukan <b>minimal 1 bid</b> di setiap kategori</p>
-                                            <p class="note">Jika tidak: <b>-50 poin</b> per kategori</p>
                                         </div>
                                     </div>
                                 </div>
