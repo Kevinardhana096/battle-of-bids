@@ -30,6 +30,19 @@ let currentBidder = null; // Team Index
 let rebidder = null; // Team Index for re-answering
 let isBidPaused = false;
 
+// DOM Elements
+const views = {
+    setup: document.getElementById('view-setup'),
+    board: document.getElementById('view-board'),
+    bidding: document.getElementById('view-bidding'),
+    answering: document.getElementById('view-answering'),
+    rebidding: document.getElementById('view-rebidding'),
+    reanswering: document.getElementById('view-reanswering')
+};
+
+const scoreboardEl = document.getElementById('scoreboard');
+const logListEl = document.getElementById('log-list');
+
 // Socket.IO client for simulation host
 const socket = io();
 const ROOM = 'simulation';
@@ -71,19 +84,6 @@ function syncTimerToViewer(elementId, timeLeft) {
 function broadcastToViewers(type, data) {
     socket.emit(type, Object.assign({ room: ROOM }, data || {}));
 }
-
-// DOM Elements
-const views = {
-    setup: document.getElementById('view-setup'),
-    board: document.getElementById('view-board'),
-    bidding: document.getElementById('view-bidding'),
-    answering: document.getElementById('view-answering'),
-    rebidding: document.getElementById('view-rebidding'),
-    reanswering: document.getElementById('view-reanswering')
-};
-
-const scoreboardEl = document.getElementById('scoreboard');
-const logListEl = document.getElementById('log-list');
 
 // --- Initialization ---
 
@@ -907,6 +907,14 @@ function setupAnsweringPhase() {
     switchView('answering');
     document.getElementById('answering-team').innerText = teams[currentBidder].name;
     document.getElementById('answer-timer').innerText = '180';
+
+    // Display question info (category and points)
+    if (activeQuestion) {
+        const categoryEl = document.getElementById('answering-category');
+        const pointsEl = document.getElementById('answering-points');
+        if (categoryEl) categoryEl.innerText = activeQuestion.category;
+        if (pointsEl) pointsEl.innerText = activeQuestion.points;
+    }
 
     // Set question image based on category and points
     if (activeQuestion) {

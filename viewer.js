@@ -598,7 +598,16 @@ function updateBiddingView() {
     document.getElementById('bid-category').innerText = activeQuestion.category;
     document.getElementById('bid-points').innerText = activeQuestion.points;
     document.getElementById('bid-price').innerText = activeQuestion.initialPrice;
+    document.getElementById('bid-max-price').innerText = activeQuestion.initialPrice * 5;
     document.getElementById('highest-bid-amount').innerText = currentBid || '0';
+
+    // Display maximum bid (gold of current bidder)
+    const maxBidEl = document.getElementById('max-bid-amount');
+    if (maxBidEl && currentBidder !== null && teams[currentBidder]) {
+        maxBidEl.innerText = teams[currentBidder].gold;
+    } else if (maxBidEl) {
+        maxBidEl.innerText = '-';
+    }
 
     // Ensure standby timer shows 30s before bidding actually starts
     const bidTimer = document.getElementById('bid-timer');
@@ -615,6 +624,14 @@ function updateBiddingView() {
 function updateAnsweringView() {
     if (currentBidder !== null && teams[currentBidder]) {
         document.getElementById('answering-team').innerText = teams[currentBidder].name;
+    }
+
+    // Display question info (category and points)
+    if (activeQuestion) {
+        const categoryEl = document.getElementById('answering-category');
+        const pointsEl = document.getElementById('answering-points');
+        if (categoryEl) categoryEl.innerText = activeQuestion.category;
+        if (pointsEl) pointsEl.innerText = activeQuestion.points;
     }
 
     // Display question image

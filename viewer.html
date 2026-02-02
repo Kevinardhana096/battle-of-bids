@@ -1776,7 +1776,7 @@
                                         <span class="card-icon">📋</span>
                                         <div class="card-text">
                                             <strong>Sebelum Bidding Ditampilkan</strong>
-                                            <p>Kategori, Poin Dasar, Harga Awal</p>
+                                            <p>Kategori, Poin Dasar, Harga Awal, Harga Maksimal</p>
                                         </div>
                                     </div>
                                     <div class="info-card highlight-card" style="--delay: 3">
@@ -2007,6 +2007,7 @@
                     <div class="question-stats">
                         <span>Poin Dasar: <b id="bid-points">0</b></span>
                         <span>Harga Awal: <b id="bid-price">0</b></span>
+                        <span>Harga Maksimal: <b id="bid-max-price" style="color: var(--warning);">0</b></span>
                     </div>
                 </div>
 
@@ -2024,6 +2025,12 @@
             <div id="view-answering" class="view hidden">
                 <h2>🎯 Fase Menjawab</h2>
                 <p class="answering-team-display"><b id="answering-team">-</b></p>
+                <div class="question-stats" style="margin: 8px auto; font-size: clamp(0.85em, 1.1vw, 1em); gap: 10px;">
+                    <span style="background: var(--accent); padding: 6px 15px; border-radius: 8px;">📂 <strong
+                            id="answering-category">-</strong></span>
+                    <span style="background: var(--success); padding: 6px 15px; border-radius: 8px;">⭐ <strong
+                            id="answering-points">-</strong> Poin</span>
+                </div>
                 <p style="font-size: clamp(0.9em, 1.3vw, 1.15em); color: var(--text-muted);">Waktu Menjawab: 3 Menit
                 </p>
 

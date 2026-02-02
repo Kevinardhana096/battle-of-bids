@@ -163,6 +163,12 @@
                 <h2>Fase Menjawab</h2>
                 <div class="answering-info">
                     <p>Tim Menjawab: <b id="answering-team">-</b></p>
+                    <div class="question-stats" style="margin: 8px 0; font-size: 0.95em; gap: 10px;">
+                        <span style="background: var(--accent); padding: 6px 15px; border-radius: 8px;">📂 <strong
+                                id="answering-category">-</strong></span>
+                        <span style="background: var(--success); padding: 6px 15px; border-radius: 8px;">⭐ <strong
+                                id="answering-points">-</strong> Poin</span>
+                    </div>
                     <div class="question-image-container">
                         <img id="question-image" src="question_placeholder.svg" alt="Soal">
                     </div>
@@ -242,6 +248,7 @@
         </div>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script src="simulation.js"></script>
 </body>
 
